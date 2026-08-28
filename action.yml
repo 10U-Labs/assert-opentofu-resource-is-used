@@ -1,12 +1,12 @@
 ---
-description: Assert every OpenTofu resource in a subsystem is reached by something
+description: Assert every OpenTofu resource in a subsystem is reached
 inputs:
   annotate:
     default: "true"
     description: Print each finding as a GitHub Actions error annotation
     required: false
   directories:
-    description: Subsystem directories holding the resources to check (space-separated)
+    description: Subsystem directories to check (space-separated)
     required: true
   exclude:
     description: Glob patterns to exclude files (comma-separated)

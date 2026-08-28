@@ -268,7 +268,7 @@ class TestReporting:
 
     def test_a_missing_directory_is_dropped(self) -> None:
         """Only the directories that exist are read."""
-        assert present(["absent"], ScanResult()) == []
+        assert not present(["absent"], ScanResult())
 
 
 @pytest.mark.unit

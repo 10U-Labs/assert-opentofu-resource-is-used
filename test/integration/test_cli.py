@@ -190,6 +190,24 @@ class TestFailures:
         assert "Errors occurred during scanning." in run_cli([str(unreadable), "--verbose"])[1]
 
 
+def run_as_a_module(arguments: list[str]) -> int:
+    """Run the package the way a workflow step does and report what it exits with.
+
+    Args:
+        arguments: What to put on the command line after the program name.
+
+    Returns:
+        The exit code the run asked for.
+    """
+    sys.modules.pop("assert_opentofu_resource_is_used.__main__", None)
+    with patch.object(sys, "argv", ["assert-opentofu-resource-is-used", *arguments]):
+        try:
+            runpy.run_module("assert_opentofu_resource_is_used", run_name="__main__")
+        except SystemExit as exit_request:
+            return int(exit_request.code) if exit_request.code is not None else 0
+    return 0
+
+
 @pytest.mark.integration
 @pytest.mark.usefixtures("repository")
 class TestModule:
@@ -199,8 +217,9 @@ class TestModule:
         self, capsys: pytest.CaptureFixture[str]
     ) -> None:
         """python -m reaches the same CLI as the console script."""
-        with patch.object(sys, "argv", ["assert-opentofu-resource-is-used", EXPORTED]):
-            sys.modules.pop("assert_opentofu_resource_is_used.__main__", None)
-            with pytest.raises(SystemExit):
-                runpy.run_module("assert_opentofu_resource_is_used", run_name="__main__")
+        run_as_a_module([EXPORTED])
         assert "aws_dynamodb_table.audit" in capsys.readouterr().out
+
+    def test_running_as_a_module_fails_the_step(self) -> None:
+        """The exit code a step reads is the same one either way."""
+        assert run_as_a_module([EXPORTED]) == EXIT_FINDINGS
