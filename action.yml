@@ -1,0 +1,59 @@
+---
+description: Assert every OpenTofu resource in a subsystem is reached by something
+inputs:
+  annotate:
+    default: "true"
+    description: Print each finding as a GitHub Actions error annotation
+    required: false
+  directories:
+    description: Subsystem directories holding the resources to check (space-separated)
+    required: true
+  exclude:
+    description: Glob patterns to exclude files (comma-separated)
+    required: false
+  fail-fast:
+    default: "false"
+    description: Exit on first finding
+    required: false
+  quiet:
+    default: "false"
+    description: Suppress output, exit code only
+    required: false
+  search-in:
+    description: Trees a use may be credited from, space-separated
+    required: false
+  verbose:
+    default: "false"
+    description: Show the directories read, the resources found and a summary
+    required: false
+  warn-only:
+    default: "false"
+    description: Always exit 0, report only
+    required: false
+name: Assert OpenTofu Resource Is Used
+runs:
+  steps:
+    - run: python3 -m pip install assert-opentofu-resource-is-used
+      shell: bash
+    - run: |
+        ARGS=""
+        [ "${{ inputs.annotate }}" = "true" ] && ARGS="$ARGS --annotate"
+        [ "${{ inputs.quiet }}" = "true" ] && ARGS="$ARGS --quiet"
+        [ "${{ inputs.verbose }}" = "true" ] && ARGS="$ARGS --verbose"
+        [ "${{ inputs.fail-fast }}" = "true" ] && ARGS="$ARGS --fail-fast"
+        [ "${{ inputs.warn-only }}" = "true" ] && ARGS="$ARGS --warn-only"
+        if [ -n "${{ inputs.exclude }}" ]; then
+          ARGS="$ARGS --exclude '${{ inputs.exclude }}'"
+        fi
+        set -f
+        for tree in ${{ inputs.search-in }}; do
+          ARGS="$ARGS --search-in '$tree'"
+        done
+        DIRECTORIES=""
+        for directory in ${{ inputs.directories }}; do
+          DIRECTORIES="$DIRECTORIES '$directory'"
+        done
+        set +f
+        eval "assert-opentofu-resource-is-used $ARGS $DIRECTORIES"
+      shell: bash
+  using: composite
