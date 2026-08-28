@@ -35,7 +35,7 @@ assert-opentofu-resource-is-used src/www/common src/bootstrap --search-in .
 
 | Option | Effect |
 | --- | --- |
-| `--search-in PATH` | A tree to credit a use from, repeatable. Defaults to the directories themselves. |
+| `--search-in PATH` | A tree to credit a use from, repeatable. |
 | `--exclude PATTERNS` | Comma-separated globs to leave out. |
 | `--annotate` | Print each finding as a GitHub Actions `::error` annotation. |
 | `--quiet` | Print nothing; report through the exit code. |
